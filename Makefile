@@ -4,6 +4,7 @@ NAMESPACE ?= cert-manager
 
 VALUES_FILE ?= chart/values.yaml
 CHART_PATH ?= chart
+CERT_MANAGER_VERSION ?= $(shell grep 'appVersion:' $(CHART_PATH)/Chart.yaml | awk '{print $$2}')
 
 CONTAINER_RUNNER ?= docker
 WORKDIR ?= $(shell pwd)
@@ -31,16 +32,21 @@ help:
 .PHONY: deps
 deps:
 	helm repo add jetstack https://charts.jetstack.io --force-update
-	helm dependency build $(CHART_PATH)
+	helm dependency update $(CHART_PATH)
+
+.PHONY: install-crds
+install-crds:
+	@echo "Installing cert-manager CRDs $(CERT_MANAGER_VERSION)..."
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.crds.yaml
 
 .PHONY: install
-install: deps
+install: deps install-crds
 	helm install $(RELEASE_NAME) $(CHART_PATH) \
 		--namespace $(NAMESPACE) --create-namespace \
 		-f $(VALUES_FILE)
 
 .PHONY: upgrade
-upgrade: deps
+upgrade: deps install-crds
 	helm upgrade --install $(RELEASE_NAME) $(CHART_PATH) \
 		--namespace $(NAMESPACE) \
 		-f $(VALUES_FILE)

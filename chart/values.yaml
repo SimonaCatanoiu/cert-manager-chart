@@ -1,8 +1,11 @@
-crds:
-  enabled: true # Set to true to install CRDs
-  keep: true # Set to true to keep CRDs after uninstalling the charts
 acme:
   email: "" # Email address for Let's Encrypt registration
 
 cloudflare:
   apiToken: "" # Plain API token; templating handles base64 encoding
+
+cert-manager:
+  crds:
+    enabled: true # Set to true to install CRDs
+    keep: true # Set to true to keep CRDs after uninstalling the charts
+  installCRDs: true

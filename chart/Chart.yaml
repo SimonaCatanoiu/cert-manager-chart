@@ -1,10 +1,10 @@
 ---
 apiVersion: v2
-name: cert-manager
+name: my-cert-manager
 type: application
 description: Cert Manager Helm Chart for Kubernetes
 appVersion: v1.19.2
-version: 1.19.2
+version: 0.1.0
 kubeVersion: ">=1.22.0-0"
 keywords:
   - cert-manager
