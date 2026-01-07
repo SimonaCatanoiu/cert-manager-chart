@@ -30,7 +30,8 @@ help:
 
 .PHONY: deps
 deps:
-	helm dependency update $(CHART_PATH)
+	helm repo add jetstack https://charts.jetstack.io --force-update
+	helm dependency build $(CHART_PATH)
 
 .PHONY: install
 install: deps
@@ -40,7 +41,7 @@ install: deps
 
 .PHONY: upgrade
 upgrade: deps
-	helm upgrade $(RELEASE_NAME) $(CHART_PATH) \
+	helm upgrade --install $(RELEASE_NAME) $(CHART_PATH) \
 		--namespace $(NAMESPACE) \
 		-f $(VALUES_FILE)
 
