@@ -3,9 +3,8 @@ apiVersion: v2
 name: my-cert-manager
 type: application
 description: Cert Manager Helm Chart for Kubernetes
-appVersion: v1.19.2
+appVersion: "0.1.0"
 version: 0.1.0
-kubeVersion: ">=1.22.0-0"
 keywords:
   - cert-manager
   - letsencrypt
@@ -15,3 +14,5 @@ dependencies:
   - name: cert-manager
     version: v1.19.2
     repository: https://charts.jetstack.io
+    alias: cert-manager
+    condition: cert-manager.enabled

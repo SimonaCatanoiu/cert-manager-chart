@@ -4,7 +4,7 @@ NAMESPACE ?= cert-manager
 
 VALUES_FILE ?= chart/values.yaml
 CHART_PATH ?= chart
-CERT_MANAGER_VERSION ?= $(shell grep 'appVersion:' $(CHART_PATH)/Chart.yaml | awk '{print $$2}')
+CERT_MANAGER_VERSION ?= $(shell grep -A 4 'name: cert-manager' $(CHART_PATH)/Chart.yaml | grep 'version:' | awk '{print $$2}')
 
 CONTAINER_RUNNER ?= docker
 WORKDIR ?= $(shell pwd)
@@ -18,8 +18,10 @@ DOCKER_RUN_HELM_DOCS := $(CONTAINER_RUNNER) run --rm -v $(WORKDIR)/chart:/helm-c
 help:
 	@echo "Usage:"
 	@echo "  make install        - Install $(RELEASE_NAME) in the cluster"
-	@echo "  make upgrade        - Upgrade $(RELEASE_NAME) release"
+	@echo "  make upgrade        - Upgrade or install $(RELEASE_NAME) release"
 	@echo "  make uninstall      - Uninstall $(RELEASE_NAME) release"
+	@echo "  make install-crds   - Install cert-manager CRDs"
+	@echo "  make uninstall-crds - Uninstall cert-manager CRDs"
 	@echo "  make deps           - Update Helm chart dependencies"
 	@echo "  make lint           - Lint the Helm chart"
 	@echo "  make template       - Render Helm templates locally"
@@ -48,12 +50,17 @@ install: deps install-crds
 .PHONY: upgrade
 upgrade: deps install-crds
 	helm upgrade --install $(RELEASE_NAME) $(CHART_PATH) \
-		--namespace $(NAMESPACE) \
+		--namespace $(NAMESPACE) --create-namespace \
 		-f $(VALUES_FILE)
 
 .PHONY: uninstall
 uninstall:
 	helm uninstall $(RELEASE_NAME) --namespace $(NAMESPACE)
+
+.PHONY: uninstall-crds
+uninstall-crds:
+	@echo "Uninstalling cert-manager CRDs $(CERT_MANAGER_VERSION)..."
+	kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.crds.yaml
 
 .PHONY: lint
 lint: deps
@@ -63,6 +70,7 @@ lint: deps
 template: deps
 	helm template $(RELEASE_NAME) \
 		$(CHART_PATH) \
+		--namespace $(NAMESPACE) \
 		-f $(VALUES_FILE)
 
 ## -------------------- Container-Based Tools --------------------
